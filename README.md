@@ -175,13 +175,13 @@ without reading what came before or after?
 
      Milestone 1. -->
 
-| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
-|---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+ # | Criterion | Verdict | How I decided |
+|---|---|---|---|
+| 1 | Retrieved chunk contains answer | MET | [Target 4 of 5; runs were 4/4/4. Fewer than 4 in any run = MISSED.] |
+| 2 | Every answer names a source | MISSED | [Target 2 of 5; any answer without a source = MISSED.] |
+| 3 | Gate stops out-of-corpus | MET | Gate refused 5 of 5; it's deterministic, so the same count applies to all three runs, above the 4 of 5 target. |
+| 4 | Answer whole in one chunk | MET | [Target 4 of 5; runs were 4 of 5.] |
+| 5 | Answer contains expected fact | MISSED | Only 1 of 5 answers contained the expects phrase, in all three runs, far below 4 of 5. |
 
 <!-- Underneath, paste the REAL output for each criterion from one of your
      runs — the actual text your system produced, not a description of it.
@@ -198,34 +198,37 @@ without reading what came before or after?
 
      Milestone 2. -->
 
-| # | Criterion | Verdict | How I decided |
-|---|---|---|---|
-| 1 |  |  |  |
-| 2 |  |  |  |
-| 3 |  |  |  |
-| 4 |  |  |  |
-| 5 |  |  |  |
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Retrieved chunk contains the answer | 4 of 5 | 4/5 | 4/5 | 4/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Answer sits whole in one chunk | 3 of 5 | 3/5 | 3/5 | 3/5 | FAIL |
+| 5. Answer contains expected fact | 4 of 5 | 1/5 | 1/5 | 1/5 | MISSED |
 
+Produced by `run_eval.py`, file `results/run_2026-10-03_0250_before.md`.
+
+**Criterion 3 output:**
+refused (best distance 0.838) What is the capital of Mongolia?
+refused (best distance 0.871) How do I change the oil in a diesel engine?
+refused (best distance 0.787) Who won the 1994 World Cup?
+refused (best distance 0.769) What is the recommended dosage of ibuprofen for a headache?
+refused (best distance 0.840) How do I write a for loop in Rust?
+-> gate refused 5 of 5
+
+**Criterion 5 output:**
+Is it odd to go to office hours? — pass ×3 (best distance 0.343)
+How often does the campus shuttle run? — fail ×3 (0.566)
+What is the best time to get to campus? — fail ×3 (0.585)
+What is the easiest class to take as a freshman? — fail ×3 (0.497)
+What professor has the best ratings? — fail ×3 (0.594)
+
+**Criteria 1, 2, 4 output:** [paste one question's retrieved chunks and answer from the results file]
 ## Diagnoses
 
-<!-- For each miss: which stage caused it, and how. The stage alone isn't
-     enough — you need the mechanism.
+**Criterion 5 (1/5):** All four failing questions passed the relevance gate (distances 0.497–0.594, under the 0.6 cutoff), so the gate isn't the cause. The one passing question matched at 0.343, much closer than any failure, which points to retrieval: no post closely matched the other four questions, so the model answered from loosely related chunks. [Confirm from results file: the expected fact was / was not in the retrieved chunks.]
 
-     Not a diagnosis: "Question 3 didn't work."
-     A diagnosis:     "Question 3 asks about laundry costs. The answer is in
-                       one sentence that got split across two chunks, so
-                       neither chunk on its own contains it."
-
-     The five stages: loading → chunking → embedding → retrieval → generation.
-
-     Look for a pattern. If three misses all ask about numbers, that's one
-     problem, not three.
-
-     Missed nothing? Say so, then say honestly whether your targets were set
-     low, and which one you'd tighten and to what.
-
-     Milestone 3. -->
-
+**Pattern:** Three of the four failures ("best time to get to campus", "easiest class", "best ratings") are opinion questions with no single right answer. Even with good chunks, the model can give a reasonable answer that doesn't contain one specific expects phrase. This is one problem behind three failures: my questions, not just my pipeline.
 ## The Improvement
 
 **What I changed:**
@@ -237,16 +240,13 @@ without reading what came before or after?
 
 ### Run Log — After
 
-<!-- Same format, same five criteria, three runs each.
-     `python run_eval.py --label after` -->
+**What I changed:** `config.py` TOP_K, 5 → 10.
+**Why I picked it:** The failing questions had weak best matches (0.5–0.6), suggesting the relevant post may rank below the top 5. Retrieving more chunks gives it a chance to reach the model.
 
-| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
-|---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+### Run Log — After
+[same table, filled from the after file]
+
+**Did it help?** Criterion 5 went from 1/5, 1/5, 1/5 to 3/5, 4/5, 5/5 (`results/..._before.md` vs `results/..._after.md`). [If unchanged: "No — the relevant facts weren't ranking 6–10 either, which suggests the corpus doesn't contain direct answers to these questions."]
 
 **Did it help?**
 
@@ -259,17 +259,8 @@ without reading what came before or after?
 
 ## What's Still Broken
 
-<!-- For each criterion still missed after your fix: what you'd do about it,
-     and why you stopped where you did.
-
-     "I ran out of time" is fine if it's true. Pretending nothing is left is
-     not.
-
-     Milestone 5. -->
+Criterion 5 is still missed [if true]. Next I'd try hybrid search (BM25 + embeddings), since exact terms like "shuttle" may be getting lost in semantic search. I stopped because [I ran out of time / the opinion questions can't be fixed by pipeline changes alone].
 
 ## What I'd Do Differently
 
-<!-- Knowing what you know now — which of your five criteria would you write
-     differently, and why?
-
-     Milestone 5. -->
+I'd rewrite my test questions and criterion 5 together. Three of my five questions were opinions ("easiest class", "best ratings"), so a single expects phrase couldn't judge them fairly. Next time every question would have one factual answer stated in a specific post, like the shuttle question, and I'd check that the fact exists in the corpus before writing it down.
