@@ -55,45 +55,15 @@ in at least 4 of 5 tries.
 
 ---
 
-## 4. Something about your chunks
+## 4. The answer sits whole inside one chunk
+For at least 4 of my 5 test questions, the chunk that contains the answer holds the complete answer — not cut off mid-sentence or split across two chunks.
 
-<!-- YOU WRITE THIS ONE.
+**Why this target:** most posts are under the 800-character chunk size, so they stay whole; a split answer means the fixed-size chunker cut through one of the longer posts.
 
-     How would you know if your chunks were the right size? Name something
-     countable or observable.
+## 5. Answers contain the expected fact
+For at least 4 of my 5 test questions, the generated answer contains the `expects` phrase from questions.py — in all three runs.
 
-     Examples of the right shape — don't copy these, they should come from
-     what you actually saw in Milestone 3:
-       - "At least 4 of 5 sampled chunks read as a complete thought, with no
-          sentence cut in half at either end."
-       - "No chunk is shorter than 200 characters, since anything below that
-          in my corpus turned out to be a heading with no content under it." -->
-
-
-
-**Why this target:**
-
-
-
----
-
-## 5. Your choice
-
-<!-- YOU WRITE THIS ONE TOO.
-
-     Pick something you actually care about getting right. It could be about
-     speed, about refusals, about a particular kind of question your corpus
-     handles badly, about source attribution being correct rather than merely
-     present — anything, as long as it names a number or an observable
-     outcome. -->
-
-
-
-**Why this target:**
-
-
-
----
+**Why this target:** generation varies between runs, so this has to hold every time; 4 of 5 allows one question where the model paraphrases the fact instead of stating it.
 
 <!-- ─────────────────────────────────────────────────────────────────────────
      UNIT 2 — read this before you change anything above.
