@@ -47,6 +47,7 @@ def load_scorer():
         import scorer  # noqa: PLC0415
     except ImportError:
         return None
+    print("Found scorer.py — running scored. Run columns will be pass/fail.")
     judge = getattr(scorer, "judge", None)
     return judge if callable(judge) else None
 
@@ -272,3 +273,5 @@ def write_report(rows, transcript, gate_rows, args, corpus, top_k, threshold, sc
 
 if __name__ == "__main__":
     main()
+
+
